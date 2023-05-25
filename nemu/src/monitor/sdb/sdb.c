@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/vaddr.h>
 
 static int is_batch_mode = false;
 
@@ -67,7 +68,35 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_x(char *args)  
+{  
+    char *arg1=strtok(NULL," ");  
+    char *arg2=strtok(NULL," ");  
+    int len;  
+    vaddr_t address;  
+      
+    sscanf(arg1,"%d",&len);  
+    sscanf(arg2,"%lx",&address);  
+      
+//    printf("0x%lx:",address);  
+    for(int i=0;i<len;i++){ 
+		printf("0x%lx: ",address); 
+		printf("%lx\n",vaddr_read(address,4));  
+        address+=4;  
+    }  
+    printf("\n");  
+    return 0;  
+}  
 static int cmd_help(char *args);
+
+static int cmd_info(char *args) {
+  char *arg = strtok(NULL," ");
+  if(strcmp(arg,"r") == 0){
+    isa_reg_display();
+  }
+  return 0;
+}
+
 
 static struct {
   const char *name;
@@ -77,10 +106,11 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "sdb", cmd_si }
 
   /* TODO: Add more commands */
-
+  {"x",  "scan memory", cmd_x},
+  { "info", "Regs detailed information", cmd_info},
+  { "si", "sdb", cmd_si }
 };
 
 #define NR_CMD ARRLEN(cmd_table)
